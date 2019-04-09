@@ -19,7 +19,16 @@ app.use(session({
     }
 }));
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use(fileUpload());
+
+    
+    // Use the mv() method to place the file somewhere on your server
+    /*sampleFile.mv('/somewhere/on/your/server/filename.jpg', function(err) {
+      if (err)
+        return res.status(500).send(err);
+  
+      res.send('File uploaded!');
+    });*/
+
 app.use('/',router);
 app.engine("handlebars", exphbs({ defaultLayout: "main" }));
 app.set("view engine", "handlebars");
