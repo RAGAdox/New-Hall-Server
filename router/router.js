@@ -1,4 +1,6 @@
 const express=require('express');
+const fileUpload=require('express-fileupload')
+const path=require('path')
 const fs = require("fs");
 const testFolder = "./uploads/";
 const user=require('../models/user')
@@ -23,6 +25,10 @@ fs.readdir(testFolder, (err, files) => {
 router.get('/check',sessionChecker,(req,res)=>{
     res.json({status:"its ok"})
 })
+router.get('/upload',sessionChecker,(req,res)=>{
+  //res.json({status:'this is the upload'})
+  res.render('upload')
+})
 router.get('/',(req,res)=>{
     res.render("index", {
         title: "Files App",
@@ -31,6 +37,28 @@ router.get('/',(req,res)=>{
 })
 router.get('/login',(req,res)=>{
   res.render('login')
+})
+router.use(fileUpload());
+router.post('/upload',sessionChecker, function(req, res) {
+    if (Object.keys(req.files).length == 0) {
+      return res.status(400).send('No files were uploaded.');
+    }
+  
+    // The name of the input field (i.e. "sampleFile") is used to retrieve the uploaded file
+    let sampleFile = req.files.sampleFile;
+    console.log(sampleFile);
+    //uploadPath = __dirname + "/uploads/" + sampleFile.name;
+    uploadPath=path.join("./uploads/" + sampleFile.name);
+
+  sampleFile.mv(uploadPath, function(err) {
+    if (err) {
+      return res.status(500).send(err);
+    }
+
+    //res.send('File uploaded to ' + uploadPath);
+    filelist.push(sampleFile.name);
+    res.redirect("/");
+  });
 })
 router.post('/login',(req,res)=>{
   console.log(user)
@@ -58,4 +86,5 @@ router.get("/downloadFile/:file", (req, res) => {
       else console.log(err);
     });
   });
+
 module.exports = router;
