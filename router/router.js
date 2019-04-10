@@ -5,16 +5,18 @@ const fs = require("fs");
 const testFolder = "./uploads/";
 const user = require('../models/user')
 let filelist = [];
+let filelistExt = [];
 const router = express.Router();
 fs.readdir(testFolder, (err, files) => {
   files.forEach(file => {
     //console.log(file);
     filelist.push(file);
+    //filelistExt.push(path.extname(file || '').split('.'))
   });
 });
 var sessionChecker = (req, res, next) => {
-  console.log(req.session.user + ' session checker')
-  console.log(req.cookies.user_sid + ' cookies checker')
+  //console.log(req.session.user + ' session checker')
+  //console.log(req.cookies.user_sid + ' cookies checker')
   if (req.session.user || req.cookies.user_sid) {
     next();
     //res.redirect('/dashboard');
@@ -46,26 +48,40 @@ router.post('/upload', sessionChecker, function (req, res) {
 
   // The name of the input field (i.e. "sampleFile") is used to retrieve the uploaded file
   let sampleFile = req.files.sampleFile;
-  console.log(sampleFile);
-  //uploadPath = __dirname + "/uploads/" + sampleFile.name;
-  sampleFile.forEach(file => {
-    uploadPath = path.join("./uploads/" + file.name);
 
-    file.mv(uploadPath, function (err) {
+  if (req.files.sampleFile[0])
+    sampleFile.forEach(file => {
+
+      uploadPath = path.join("./uploads/" + file.name);
+
+      file.mv(uploadPath, function (err) {
+        if (err) {
+          return res.status(500).send(err);
+        }
+
+        //res.send('File uploaded to ' + uploadPath);
+        filelist.push(file.name);
+
+      });
+
+    })
+  else {
+    uploadPath = path.join("./uploads/" + sampleFile.name);
+
+    sampleFile.mv(uploadPath, function (err) {
       if (err) {
         return res.status(500).send(err);
       }
 
       //res.send('File uploaded to ' + uploadPath);
-      filelist.push(file.name);
+      filelist.push(sampleFile.name);
 
     });
-
-  })
+  }
   res.redirect("/");
 })
 router.post('/login', (req, res) => {
-  console.log(user)
+  //console.log(user)
   if (req.body.username == 'admin' && req.body.password == 'admin') {
     console.log('correct')
     user.username = req.body.username
@@ -83,11 +99,34 @@ router.get('/logout', (req, res) => {
   }
 });
 router.get("/downloadFile/:file", (req, res) => {
-  console.log(req.params.file);
+  //console.log(req.params.file);
   res.download("./uploads/" + req.params.file.substring(1), err => {
     if (err == null) console.log("File Transfered Successfully");
     else console.log(err);
   });
 });
+router.get('/view/:file', (req, res) => {
+  //res.json({ check: '/uploads/' + req.params.file.substring(1) })
+  //res.redirect('/uploads/' + req.params.file.substring(1))
+  let link = '/' + req.params.file.substring(1)
+  console.log(path.extname(link).split('.')[1])
+  if (path.extname(link).split('.')[1] == 'mp4') {
+    console.log('render video')
+    res.render('viewVideo', {
+      link,
+    })
+  }
+  else if (path.extname(link).split('.')[1] == 'mp3') {
+    console.log('render Audio')
+    res.render('viewAudio', {
+      link,
+    })
+  }
+  else {
+    console.log('error')
+    res.redirect('/downloadFile/' + req.params.file)
+  }
 
+  //
+})
 module.exports = router;
