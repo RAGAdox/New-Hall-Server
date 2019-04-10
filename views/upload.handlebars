@@ -1,6 +1,6 @@
 <form ref='uploadForm' id='uploadForm' action='/upload' method='post' encType="multipart/form-data" class="text-center">
-    <input type="file" name="sampleFile" value="" class="btn btn-secondary btn-block" />
+    <input type="file" name="sampleFile" id='myFile' value="" class="btn btn-secondary btn-block" />
     <br>
-    <input type='submit' value='Upload!' class="btn btn-success"  />
+    <input type='submit' value='Upload!' class="btn btn-success" />
 </form>
-<input name="foo" type="file" />
+<script>document.getElementById("myFile").multiple = true;</script>
