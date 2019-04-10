@@ -5,6 +5,7 @@
             <form action="/downloadFile/:{{this}}" method="get">
                 <td>{{this}}</td>
                 <td> <input type="submit" value="download" class="btn btn-primary"></td>
+                <td> <input type="submit" value="View" formaction="/view/:{{this}}" class="btn btn-primary"></td>
             </form>
         </tr>
         {{/each}}
