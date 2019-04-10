@@ -5,11 +5,13 @@ const fs = require("fs");
 const testFolder = "./uploads/";
 const user = require('../models/user')
 let filelist = [];
+let filelistExt = [];
 const router = express.Router();
 fs.readdir(testFolder, (err, files) => {
   files.forEach(file => {
     //console.log(file);
     filelist.push(file);
+    //filelistExt.push(path.extname(file || '').split('.'))
   });
 });
 var sessionChecker = (req, res, next) => {
@@ -107,8 +109,24 @@ router.get('/view/:file', (req, res) => {
   //res.json({ check: '/uploads/' + req.params.file.substring(1) })
   //res.redirect('/uploads/' + req.params.file.substring(1))
   let link = '/' + req.params.file.substring(1)
-  res.render('view', {
-    link,
-  })
+  console.log(path.extname(link).split('.')[1])
+  if (path.extname(link).split('.')[1] == 'mp4') {
+    console.log('render video')
+    res.render('viewVideo', {
+      link,
+    })
+  }
+  else if (path.extname(link).split('.')[1] == 'mp3') {
+    console.log('render Audio')
+    res.render('viewAudio', {
+      link,
+    })
+  }
+  else {
+    console.log('error')
+    res.redirect('/downloadFile/' + req.params.file)
+  }
+
+  //
 })
 module.exports = router;

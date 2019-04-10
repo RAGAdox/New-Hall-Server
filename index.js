@@ -1,5 +1,6 @@
 const express = require('express');
 const exphbs = require("express-handlebars");
+const fs = require('fs');
 const fileUpload = require('express-fileupload')
 const session = require('express-session')
 var cookieParser = require('cookie-parser');
@@ -19,6 +20,39 @@ app.use(session({
   }
 }));
 app.use(express.static('uploads'))
+
+/*testing*/
+app.get('/video', function (req, res) {
+  const pathvideo = 'assets/sample.mp4'
+  //console.log(pathvideo)
+  const stat = fs.statSync(pathvideo)
+  const fileSize = stat.size
+  const range = req.headers.range
+  if (range) {
+    const parts = range.replace(/bytes=/, "").split("-")
+    const start = parseInt(parts[0], 10)
+    const end = parts[1]
+      ? parseInt(parts[1], 10)
+      : fileSize - 1
+    const chunksize = (end - start) + 1
+    const file = fs.createReadStream(pathvideo, { start, end })
+    const head = {
+      'Content-Range': `bytes ${start}-${end}/${fileSize}`,
+      'Accept-Ranges': 'bytes',
+      'Content-Length': chunksize,
+      'Content-Type': 'video/mp4',
+    }
+    res.writeHead(206, head);
+    file.pipe(res);
+  } else {
+    const head = {
+      'Content-Length': fileSize,
+      'Content-Type': 'video/mp4',
+    }
+    res.writeHead(200, head)
+    fs.createReadStream(pathvideo).pipe(res)
+  }
+});
 app.use(bodyParser.urlencoded({ extended: false }));
 
 
