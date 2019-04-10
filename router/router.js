@@ -14,31 +14,25 @@ fs.readdir(testFolder, (err, files) => {
     //filelistExt.push(path.extname(file || '').split('.'))
   });
 });
+/*middleware for login Check*/
 var sessionChecker = (req, res, next) => {
-  //console.log(req.session.user + ' session checker')
-  //console.log(req.cookies.user_sid + ' cookies checker')
   if (req.session.user || req.cookies.user_sid) {
     next();
-    //res.redirect('/dashboard');
   } else {
-    res.json({ status: 'not loged in' })
+    res.redirect('/login')
   }
 };
+/*testing if user is logged in or not
+  //dummy route
+  */
 router.get('/check', sessionChecker, (req, res) => {
   res.json({ status: "its ok" })
 })
+//UPLOAD FUNCTIONALITY
+/*route for rendering upload page*/
 router.get('/upload', sessionChecker, (req, res) => {
   //res.json({status:'this is the upload'})
   res.render('upload')
-})
-router.get('/', (req, res) => {
-  res.render("index", {
-    title: "Files App",
-    filelist,
-  })
-})
-router.get('/login', (req, res) => {
-  res.render('login')
 })
 router.use(fileUpload());
 router.post('/upload', sessionChecker, function (req, res) {
@@ -80,24 +74,48 @@ router.post('/upload', sessionChecker, function (req, res) {
   }
   res.redirect("/");
 })
-router.post('/login', (req, res) => {
+
+//LOGIN FUNCTIONALLITY
+/*Route for rendering login page*/
+router.get('/login', (req, res, next) => {
+  res.render('login')
+})
+/*route for ACTUAL AUTHENTICATION*/
+router.post('/login', (req, res, next) => {
   //console.log(user)
   if (req.body.username == 'admin' && req.body.password == 'admin') {
     console.log('correct')
     user.username = req.body.username
     user.password = req.body.password
     req.session.user = user
-    res.redirect('/')
+    res.redirect('/upload')
+    //next()
+  }
+  else {
+    //res.send('Invalid Credentials')
+    res.render('login', {
+      msg: 'invalid Credentials'
+    })
   }
 })
+/*route for Logging Out The user*/
 router.get('/logout', (req, res) => {
-  if (req.session.user && req.cookies.user_sid) {
+  if (req.session.user || req.cookies.user_sid) {
     res.clearCookie('user_sid');
     res.redirect('/');
   } else {
     res.redirect('/login');
   }
 });
+//MAIN FUNCTIONALITY
+//RENDERING HOME PAGE SHOWING ALL FILES PRESENT
+router.get('/', (req, res) => {
+  res.render("index", {
+    title: "Files App",
+    filelist,
+  })
+})
+//Route for downloading Files
 router.get("/downloadFile/:file", (req, res) => {
   //console.log(req.params.file);
   res.download("./uploads/" + req.params.file.substring(1), err => {
@@ -105,6 +123,7 @@ router.get("/downloadFile/:file", (req, res) => {
     else console.log(err);
   });
 });
+//Route for viewing the Mp4 and mp4
 router.get('/view/:file', (req, res) => {
   //res.json({ check: '/uploads/' + req.params.file.substring(1) })
   //res.redirect('/uploads/' + req.params.file.substring(1))

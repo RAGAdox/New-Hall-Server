@@ -8,8 +8,10 @@ const path = require("path");
 var bodyParser = require("body-parser");
 const testFolder = "./uploads/";
 const router = require('./router/router.js');
+
 const app = express();
 app.use(cookieParser());
+
 app.use(session({
   key: 'user_sid',
   secret: 'somerandonstuffs',
