@@ -112,11 +112,24 @@ router.get('/logout', (req, res) => {
 //MAIN FUNCTIONALITY
 //RENDERING HOME PAGE SHOWING ALL FILES PRESENT
 router.get('/', (req, res) => {
-  let files = filelist
-  res.render("index", {
-    title: "Files App",
-    files,
-  })
+  let counter = 0;
+  filelist = []
+  fs.readdir(testFolder, (err, files) => {
+    files.forEach(file => {
+      counter++
+      if (!fs.statSync(testFolder + file).isDirectory())
+        filelist.push(file);
+      //filelistExt.push(path.extname(file || '').split('.'))
+      if (counter == files.length) {
+        let files = filelist
+        res.render("index", {
+          title: "Files App",
+          files,
+        })
+      }
+    });
+  });
+
 })
 //Route for downloading Files
 router.get("/downloadFile/:files", (req, res) => {
@@ -202,5 +215,56 @@ router.get('/showFiles/:folder', (req, res) => {
       }
     })
   })
+})
+router.get('/uploadFile', (req, res) => {
+  res.render('uploadFile')
+})
+router.post('/uploadFile', (req, res) => {
+  console.log(req.body.folder)
+  fs.mkdir('./uploads/' + req.body.folder, function (err) {
+    if (err == null || err.code == 'EEXIST') {
+      console.log('dir created successfully');
+      if (Object.keys(req.files).length == 0) {
+        return res.status(400).send('No files were uploaded.');
+      }
+
+      // The name of the input field (i.e. "sampleFile") is used to retrieve the uploaded file
+      let sampleFile = req.files.sampleFile;
+
+      if (req.files.sampleFile[0])
+        sampleFile.forEach(file => {
+
+          uploadPath = path.join("./uploads/" + req.body.folder + '/' + file.name);
+
+          file.mv(uploadPath, function (err) {
+            if (err) {
+              return res.status(500).send(err);
+            }
+
+            //res.send('File uploaded to ' + uploadPath);
+            filelist.push(file.name);
+
+          });
+
+        })
+      else {
+        uploadPath = path.join("./uploads/" + req.body.folder + '/' + sampleFile.name);
+
+        sampleFile.mv(uploadPath, function (err) {
+          if (err) {
+            return res.status(500).send(err);
+          }
+
+          //res.send('File uploaded to ' + uploadPath);
+          filelist.push(sampleFile.name);
+
+        });
+      }
+    }
+    else
+      console.log(err.code);
+
+  });
+  res.redirect('/')
 })
 module.exports = router;
