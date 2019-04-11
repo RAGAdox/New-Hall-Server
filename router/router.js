@@ -119,18 +119,31 @@ router.get('/', (req, res) => {
   })
 })
 //Route for downloading Files
-router.get("/downloadFile/:file", (req, res) => {
-  //console.log(req.params.file);
-  res.download("./uploads/" + req.params.file.substring(1), err => {
-    if (err == null) console.log("File Transfered Successfully");
-    else console.log(err);
-  });
+router.get("/downloadFile/:files", (req, res) => {
+  console.log(req.headers.referer.split(':')[3])
+  //console.log('from download route ', "./uploads/" + req.params.files.substring(1));
+  if (req.headers.referer.split(':')[3])
+    res.download("./uploads/" + req.headers.referer.split(':')[3] + '/' + req.params.files.substring(1), err => {
+      if (err == null) console.log("File Transfered Successfully");
+      else console.log(err);
+    });
+  else {
+    res.download("./uploads/" + req.params.files.substring(1), err => {
+      if (err == null) console.log("File Transfered Successfully");
+      else console.log(err);
+    });
+
+  }
 });
 //Route for viewing the Mp4 and mp4
 router.get('/view/:file', (req, res) => {
   //res.json({ check: '/uploads/' + req.params.file.substring(1) })
   //res.redirect('/uploads/' + req.params.file.substring(1))
-  let link = '/' + req.params.file.substring(1)
+  let link = ''
+  if (req.headers.referer.split(':')[3])
+    link = '/' + req.headers.referer.split(':')[3] + '/' + req.params.file.substring(1)
+  else
+    link = '/' + req.params.file.substring(1)
   console.log(path.extname(link).split('.')[1])
   if (path.extname(link).split('.')[1] == 'mp4') {
     console.log('render video')
@@ -173,19 +186,21 @@ router.get('/showFiles/:folder', (req, res) => {
   let filesinDir = []
   let i = 0;
   fs.readdir(testFolder + req.params.folder.substring(1) + '/', (err, files) => {
+    let folder = req.params.folder.substring(1) + '/'
     files.forEach(file => {
-      console.log(file);
+      //console.log(file);
       filesinDir.push(file);
       i++;
       if (i == files.length) {
         let files = filesinDir
+
         res.render('index', {
           title: "Files App",
+          folder,
           files,
         });
       }
     })
   })
 })
-
 module.exports = router;
