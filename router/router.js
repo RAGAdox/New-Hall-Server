@@ -5,12 +5,14 @@ const fs = require("fs");
 const testFolder = "./uploads/";
 const user = require('../models/user')
 let filelist = [];
-let filelistExt = [];
+let dirlist = [];
 const router = express.Router();
 fs.readdir(testFolder, (err, files) => {
   files.forEach(file => {
     //console.log(file);
-    filelist.push(file);
+    //console.log(fs.statSync(testFolder + file).isDirectory())
+    if (!fs.statSync(testFolder + file).isDirectory())
+      filelist.push(file);
     //filelistExt.push(path.extname(file || '').split('.'))
   });
 });
@@ -110,9 +112,10 @@ router.get('/logout', (req, res) => {
 //MAIN FUNCTIONALITY
 //RENDERING HOME PAGE SHOWING ALL FILES PRESENT
 router.get('/', (req, res) => {
+  let files = filelist
   res.render("index", {
     title: "Files App",
-    filelist,
+    files,
   })
 })
 //Route for downloading Files
@@ -148,4 +151,41 @@ router.get('/view/:file', (req, res) => {
 
   //
 })
+
+//IN TESTING MODE 
+router.get('/showfiles', (req, res) => {
+  dirlist = []
+  fs.readdir(testFolder, (err, files) => {
+    files.forEach(file => {
+      //console.log(file);
+      //console.log(fs.statSync(testFolder + file).isDirectory())
+      if (fs.statSync(testFolder + file).isDirectory())
+        dirlist.push(file);
+      //filelistExt.push(path.extname(file || '').split('.'))
+    });
+  });
+  res.render('showFiles', {
+    dirlist,
+  })
+})
+router.get('/showFiles/:folder', (req, res) => {
+  console.log(testFolder + req.params.folder.substring(1))
+  let filesinDir = []
+  let i = 0;
+  fs.readdir(testFolder + req.params.folder.substring(1) + '/', (err, files) => {
+    files.forEach(file => {
+      console.log(file);
+      filesinDir.push(file);
+      i++;
+      if (i == files.length) {
+        let files = filesinDir
+        res.render('index', {
+          title: "Files App",
+          files,
+        });
+      }
+    })
+  })
+})
+
 module.exports = router;
