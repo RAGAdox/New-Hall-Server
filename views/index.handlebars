@@ -1,4 +1,4 @@
-{{title}}
+{{folder}}
 <div class="table-responsive-lg">
     <table class="table table-hover table-bordered table-dark">
         <tbody>
@@ -7,7 +7,8 @@
                 <form action="/downloadFile/:{{this}}" method="get">
                     <td>{{this}}</td>
                     <td>
-                        <input type="submit" value="download" class="btn btn-primary">
+                        <!--input type="text" name="username" class="form-control"-->
+                        <input type="submit" name="folder" value="download" class="btn btn-primary">
                         <input type="submit" value="View" formaction="/view/:{{this}}" class="btn btn-primary">
                     </td>
                 </form>
