@@ -131,32 +131,23 @@ router.get('/', (req, res) => {
   });
 
 })
-//Route for downloading Files
-router.get("/downloadFile/:files", (req, res) => {
-  console.log(req.headers.referer.split(':')[3])
-  //console.log('from download route ', "./uploads/" + req.params.files.substring(1));
-  if (req.headers.referer.split(':')[3])
-    res.download("./uploads/" + req.headers.referer.split(':')[3] + '/' + req.params.files.substring(1), err => {
-      if (err == null) console.log("File Transfered Successfully");
-      else console.log(err);
-    });
-  else {
-    res.download("./uploads/" + req.params.files.substring(1), err => {
-      if (err == null) console.log("File Transfered Successfully");
-      else console.log(err);
-    });
-
-  }
-});
+router.post('/downloadFile',(req,res)=>{
+  console.log(req.body.file);
+  res.download("./uploads/"+req.body.file , err => {
+    if (err == null) console.log("File Transfered Successfully");
+    else console.log(err);
+  });
+})
 //Route for viewing the Mp4 and mp4
-router.get('/view/:file', (req, res) => {
-  //res.json({ check: '/uploads/' + req.params.file.substring(1) })
-  //res.redirect('/uploads/' + req.params.file.substring(1))
-  let link = ''
-  if (req.headers.referer.split(':')[3])
-    link = '/' + req.headers.referer.split(':')[3] + '/' + req.params.file.substring(1)
-  else
-    link = '/' + req.params.file.substring(1)
+router.post('/view',(req,res)=>{
+  let id=req.body.fileView
+  res.redirect(`/view/?id=${id}`)
+})
+router.get('/view', (req, res) => {
+
+  let link =req.query.id||''
+
+  console.log(link)
   console.log(path.extname(link).split('.')[1])
   if (path.extname(link).split('.')[1] == 'mp4') {
     console.log('render video')
@@ -172,50 +163,53 @@ router.get('/view/:file', (req, res) => {
   }
   else {
     console.log('error')
-    res.redirect('/downloadFile/' + req.params.file)
+    res.download("./uploads/"+link , err => {
+      if (err == null) console.log("File Transfered Successfully");
+      else console.log(err);
+    });
   }
 
   //
 })
 
 //IN TESTING MODE 
+//router.use(bodyParser.urlencoded({ extended: false }));
 router.get('/showfiles', (req, res) => {
   dirlist = []
-  fs.readdir(testFolder, (err, files) => {
-    files.forEach(file => {
+  let fileToShow=[]
+  
+  var id=req.query.id||''
+  console.log(testFolder+id)
+  fs.readdir(testFolder+id, (err, files) => {
+    let l=files.length
+    files.forEach((file,i) => {
       //console.log(file);
       //console.log(fs.statSync(testFolder + file).isDirectory())
-      if (fs.statSync(testFolder + file).isDirectory())
+      
+      if (fs.statSync(testFolder+id +'/'+ file).isDirectory())
         dirlist.push(file);
+      else if(!fs.statSync(testFolder+id+'/' + file).isDirectory())
+        fileToShow.push(file)
+      if(i==l-1){
+      res.render('showFiles', {
+        dirlist:dirlist,
+        fileToShow:fileToShow,
+        id:id+'/' 
+      })
+      //console.log(dirlist)
+
+    }
       //filelistExt.push(path.extname(file || '').split('.'))
     });
   });
-  res.render('showFiles', {
-    dirlist,
-  })
+  
 })
-router.get('/showFiles/:folder', (req, res) => {
-  console.log(testFolder + req.params.folder.substring(1))
-  let filesinDir = []
-  let i = 0;
-  fs.readdir(testFolder + req.params.folder.substring(1) + '/', (err, files) => {
-    let folder = req.params.folder.substring(1) + '/'
-    files.forEach(file => {
-      //console.log(file);
-      filesinDir.push(file);
-      i++;
-      if (i == files.length) {
-        let files = filesinDir
+router.post('/showfiles', (req, res) => {
+  let id=req.body.folder
+  //console.log(id)
+  res.redirect(`/showFiles/?id=${id}`)
+})
 
-        res.render('index', {
-          title: "Files App",
-          folder,
-          files,
-        });
-      }
-    })
-  })
-})
 router.get('/uploadFile', (req, res) => {
   res.render('uploadFile')
 })

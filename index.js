@@ -1,5 +1,7 @@
 const express = require('express');
 const exphbs = require("express-handlebars");
+var methodOverride = require('method-override')
+
 const fs = require('fs');
 const fileUpload = require('express-fileupload')
 const session = require('express-session')
@@ -56,18 +58,8 @@ app.get('/video', function (req, res) {
   }
 });
 app.use(bodyParser.urlencoded({ extended: false }));
-
-
-// Use the mv() method to place the file somewhere on your server
-/*sampleFile.mv('/somewhere/on/your/server/filename.jpg', function(err) {
-  if (err)
-    return res.status(500).send(err);
- 
-  res.send('File uploaded!');
-});*/
-
 app.use('/', router);
 app.engine("handlebars", exphbs({ defaultLayout: "main" }));
 app.set("view engine", "handlebars");
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => console.log("Server Started at post : " + PORT));
