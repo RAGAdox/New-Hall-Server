@@ -138,6 +138,64 @@ router.post('/downloadFile',(req,res)=>{
     else console.log(err);
   });
 })
+router.post('/delete',(req,res)=>{
+  let fileToDel=req.body.filedel
+  fs.unlink(testFolder+fileToDel,err=>{
+    if(err)
+      console.log(err)
+    else{
+      console.log('File Deleted')
+      console.log(req.headers.referer)
+      //res.redirect(`/showFiles/`)
+      res.redirect(req.headers.referer)
+    }
+  });
+})
+router.post('/newfolder',(req,res)=>{
+  let cur=testFolder+req.body.foldername
+  fs.mkdir(cur+req.body.newfolder, { recursive: true }, (err) => {
+    if (err) throw err;
+    else res.redirect(req.headers.referer)
+  });
+})
+router.post('/uploadCur',(req,res)=>{
+  if (Object.keys(req.files).length == 0) {
+    return res.status(400).send('No files were uploaded.');
+  }
+
+  // The name of the input field (i.e. "sampleFile") is used to retrieve the uploaded file
+  let sampleFile = req.files.sampleFile;
+
+  if (req.files.sampleFile[0])
+    sampleFile.forEach(file => {
+
+      uploadPath = path.join("./uploads/" + file.name);
+
+      file.mv(uploadPath, function (err) {
+        if (err) {
+          return res.status(500).send(err);
+        }
+
+        //res.send('File uploaded to ' + uploadPath);
+        filelist.push(file.name);
+
+      });
+
+    })
+  else {
+    uploadPath = path.join("./uploads/" + sampleFile.name);
+
+    sampleFile.mv(uploadPath, function (err) {
+      if (err) {
+        return res.status(500).send(err);
+      }
+
+      //res.send('File uploaded to ' + uploadPath);
+      filelist.push(sampleFile.name);
+
+    });
+  }
+})
 //Route for viewing the Mp4 and mp4
 router.post('/view',(req,res)=>{
   let id=req.body.fileView
@@ -182,6 +240,7 @@ router.get('/showfiles', (req, res) => {
   console.log(testFolder+id)
   fs.readdir(testFolder+id, (err, files) => {
     let l=files.length
+    if(l)
     files.forEach((file,i) => {
       //console.log(file);
       //console.log(fs.statSync(testFolder + file).isDirectory())
@@ -201,6 +260,9 @@ router.get('/showfiles', (req, res) => {
     }
       //filelistExt.push(path.extname(file || '').split('.'))
     });
+    else
+      res.send('No Data Found in the Folder')
+      //res.json({msg:'no files'})
   });
   
 })
