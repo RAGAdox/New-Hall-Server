@@ -2,6 +2,9 @@ const express = require('express');
 const fileUpload = require('express-fileupload')
 const path = require('path')
 const fs = require("fs");
+var multer = require('multer');
+var upload = multer({ dest: 'uploads/' });
+
 const testFolder = "./uploads/";
 const user = require('../models/user')
 let filelist = [];
@@ -38,6 +41,8 @@ router.get('/upload', sessionChecker, (req, res) => {
 })
 router.use(fileUpload());
 router.post('/upload', sessionChecker, function (req, res) {
+  //console.log(req.body.foldername)
+  let curpath=req.body.foldername||''
   if (Object.keys(req.files).length == 0) {
     return res.status(400).send('No files were uploaded.');
   }
@@ -48,7 +53,7 @@ router.post('/upload', sessionChecker, function (req, res) {
   if (req.files.sampleFile[0])
     sampleFile.forEach(file => {
 
-      uploadPath = path.join("./uploads/" + file.name);
+      uploadPath = path.join("./uploads/"+curpath + file.name);
 
       file.mv(uploadPath, function (err) {
         if (err) {
@@ -62,7 +67,7 @@ router.post('/upload', sessionChecker, function (req, res) {
 
     })
   else {
-    uploadPath = path.join("./uploads/" + sampleFile.name);
+    uploadPath = path.join("./uploads/"+curpath + sampleFile.name);
 
     sampleFile.mv(uploadPath, function (err) {
       if (err) {
@@ -74,9 +79,8 @@ router.post('/upload', sessionChecker, function (req, res) {
 
     });
   }
-  res.redirect("/");
+  res.redirect(req.headers.referer);
 })
-
 //LOGIN FUNCTIONALLITY
 /*Route for rendering login page*/
 router.get('/login', (req, res, next) => {
@@ -158,44 +162,7 @@ router.post('/newfolder',(req,res)=>{
     else res.redirect(req.headers.referer)
   });
 })
-router.post('/uploadCur',(req,res)=>{
-  if (Object.keys(req.files).length == 0) {
-    return res.status(400).send('No files were uploaded.');
-  }
 
-  // The name of the input field (i.e. "sampleFile") is used to retrieve the uploaded file
-  let sampleFile = req.files.sampleFile;
-
-  if (req.files.sampleFile[0])
-    sampleFile.forEach(file => {
-
-      uploadPath = path.join("./uploads/" + file.name);
-
-      file.mv(uploadPath, function (err) {
-        if (err) {
-          return res.status(500).send(err);
-        }
-
-        //res.send('File uploaded to ' + uploadPath);
-        filelist.push(file.name);
-
-      });
-
-    })
-  else {
-    uploadPath = path.join("./uploads/" + sampleFile.name);
-
-    sampleFile.mv(uploadPath, function (err) {
-      if (err) {
-        return res.status(500).send(err);
-      }
-
-      //res.send('File uploaded to ' + uploadPath);
-      filelist.push(sampleFile.name);
-
-    });
-  }
-})
 //Route for viewing the Mp4 and mp4
 router.post('/view',(req,res)=>{
   let id=req.body.fileView
@@ -261,7 +228,11 @@ router.get('/showfiles', (req, res) => {
       //filelistExt.push(path.extname(file || '').split('.'))
     });
     else
-      res.send('No Data Found in the Folder')
+    res.render('showFiles', {
+      dirlist:dirlist,
+      fileToShow:fileToShow,
+      id:id+'/' 
+    })
       //res.json({msg:'no files'})
   });
   
@@ -280,6 +251,7 @@ router.post('/uploadFile', (req, res) => {
   fs.mkdir('./uploads/' + req.body.folder, function (err) {
     if (err == null || err.code == 'EEXIST') {
       console.log('dir created successfully');
+      console.log('in req.file'+req.file)
       if (Object.keys(req.files).length == 0) {
         return res.status(400).send('No files were uploaded.');
       }
