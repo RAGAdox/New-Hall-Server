@@ -3,11 +3,11 @@
         <input type="text" name='newfolder'>
         <button type="submit" name="foldername" value="{{@root.id}}" class="btn btn-secondary">NEW FOLDER</button>
     </form>
-    <form action="/uploadCur" method="POST">
+    <form ref='uploadForm' id='uploadForm' action='/upload' method='post' encType="multipart/form-data" class="text-center">
         <input type="file" name="sampleFile" id='myFile' value="" class="btn btn-secondary btn-block" />
-        <br>
-        <button type='submit' name="foldername" value="{{@root.id}}" class="btn btn-success" />
+        <input type='submit' value='{{@root.id}}' name='foldername' class="btn btn-success" />
     </form>
+    <script>document.getElementById("myFile").multiple = true;</script>
 </div>
 <div class="row">
     {{#each dirlist}}
