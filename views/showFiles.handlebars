@@ -3,9 +3,13 @@
         <input type="text" name='newfolder'>
         <button type="submit" name="foldername" value="{{@root.id}}" class="btn btn-secondary">NEW FOLDER</button>
     </form>
-    <form ref='uploadForm' id='uploadForm' action='/upload' method='post' encType="multipart/form-data" class="text-center">
+    <form ref='uploadForm' id='uploadForm' action='/upload' method='post' encType="multipart/form-data"
+        class="text-center">
         <input type="file" name="sampleFile" id='myFile' value="" class="btn btn-secondary btn-block" />
         <input type='submit' value='{{@root.id}}' name='foldername' class="btn btn-success" />
+    </form>
+    <form action="/delete" method="POST">
+        <input type="submit" value="{{@root.id}}" name='curfolder'>
     </form>
     <script>document.getElementById("myFile").multiple = true;</script>
 </div>
@@ -17,7 +21,9 @@
                 <h5 class="card-title">Special title treatment</h5>
                 <p class="card-text">With supporting text below as a natural lead-in to additional content.</p>
                 <!--a href="/showFiles/:{{this}}" class="btn btn-primary">{{this}}</a-->
-
+                <form action="/delete" method="POST">
+                    <input type="submit" value="{{@root.id}}{{this}}" name='curfolder'>
+                </form>
                 <form action="/showFiles/" method="POST">
                     <input type="submit" name='folder' value='{{@root.id}}{{this}}' class="btn btn-primary btn-block">
                 </form>
@@ -26,6 +32,7 @@
     </div>
     {{/each}}
 </div>
+<p>Size of Directory : {{dirSize}}KB</p>
 <div class="table-responsive-lg">
     <table class="table table-hover table-bordered table-dark">
         <tbody>

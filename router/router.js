@@ -1,6 +1,8 @@
 const express = require('express');
 const fileUpload = require('express-fileupload')
 const path = require('path')
+const util = require('util');
+const exec = util.promisify(require('child_process').exec);
 const fs = require("fs");
 var multer = require('multer');
 var upload = multer({ dest: 'uploads/' });
@@ -10,6 +12,19 @@ const user = require('../models/user')
 let filelist = [];
 let dirlist = [];
 const router = express.Router();
+async function del(arg) {
+  let pathToDel
+  if(arg.charAt(arg.length)=='/')
+  pathToDel=arg.substring(1,arg.length-1)
+  else
+  pathToDel=arg.substring(1,arg.length)
+  
+
+  const { stdout, stderr } = await exec('cd uploads && rm -rf '+pathToDel);
+  console.log('stdout:', stdout);
+  console.log('stderr:', stderr);
+  
+}
 fs.readdir(testFolder, (err, files) => {
   files.forEach(file => {
     //console.log(file);
@@ -30,6 +45,13 @@ var sessionChecker = (req, res, next) => {
 /*testing if user is logged in or not
   //dummy route
   */
+router.post('/delete',(req,res)=>{
+  console.log(req.body.curfolder)
+  let folder=req.body.curfolder
+  del(folder).then(()=>{
+    res.redirect('/')
+  });
+})
 router.get('/check', sessionChecker, (req, res) => {
   res.json({ status: "its ok" })
 })
@@ -90,7 +112,7 @@ router.get('/login', (req, res, next) => {
 router.post('/login', (req, res, next) => {
   //console.log(user)
   if (req.body.username == 'admin' && req.body.password == 'admin') {
-    console.log('correct')
+    //console.log('correct')
     user.username = req.body.username
     user.password = req.body.password
     req.session.user = user
@@ -136,7 +158,7 @@ router.get('/', (req, res) => {
 
 })
 router.post('/downloadFile',(req,res)=>{
-  console.log(req.body.file);
+  //console.log(req.body.file);
   res.download("./uploads/"+req.body.file , err => {
     if (err == null) console.log("File Transfered Successfully");
     else console.log(err);
@@ -148,8 +170,8 @@ router.post('/delete',(req,res)=>{
     if(err)
       console.log(err)
     else{
-      console.log('File Deleted')
-      console.log(req.headers.referer)
+      //console.log('File Deleted')
+      //console.log(req.headers.referer)
       //res.redirect(`/showFiles/`)
       res.redirect(req.headers.referer)
     }
@@ -172,8 +194,8 @@ router.get('/view', (req, res) => {
 
   let link =req.query.id||''
 
-  console.log(link)
-  console.log(path.extname(link).split('.')[1])
+  //console.log(link)
+  //console.log(path.extname(link).split('.')[1])
   if (path.extname(link).split('.')[1] == 'mp4') {
     console.log('render video')
     res.render('viewVideo', {
@@ -200,26 +222,37 @@ router.get('/view', (req, res) => {
 //IN TESTING MODE 
 //router.use(bodyParser.urlencoded({ extended: false }));
 router.get('/showfiles', (req, res) => {
-  dirlist = []
+  let dirlist = []
+  let dirSize=0;
   let fileToShow=[]
   
   var id=req.query.id||''
-  console.log(testFolder+id)
+  //console.log(testFolder+id)
   fs.readdir(testFolder+id, (err, files) => {
     let l=files.length
+    let stat
     if(l)
     files.forEach((file,i) => {
       //console.log(file);
       //console.log(fs.statSync(testFolder + file).isDirectory())
-      
-      if (fs.statSync(testFolder+id +'/'+ file).isDirectory())
+      stat=fs.statSync(testFolder+id +'/'+ file)
+      if (stat.isDirectory()){
         dirlist.push(file);
-      else if(!fs.statSync(testFolder+id+'/' + file).isDirectory())
+        //console.log(stat.size)
+        //dirSize.push(file.)
+      }
+      else if(!stat.isDirectory()){
+        console.log(stat.size)
+        dirSize+=stat.size
         fileToShow.push(file)
+      }
       if(i==l-1){
+        dirSize/=1024
+        
       res.render('showFiles', {
         dirlist:dirlist,
         fileToShow:fileToShow,
+        dirSize:dirSize,
         id:id+'/' 
       })
       //console.log(dirlist)
@@ -247,11 +280,11 @@ router.get('/uploadFile', (req, res) => {
   res.render('uploadFile')
 })
 router.post('/uploadFile', (req, res) => {
-  console.log(req.body.folder)
+  //console.log(req.body.folder)
   fs.mkdir('./uploads/' + req.body.folder, function (err) {
     if (err == null || err.code == 'EEXIST') {
-      console.log('dir created successfully');
-      console.log('in req.file'+req.file)
+      //console.log('dir created successfully');
+      //console.log('in req.file'+req.file)
       if (Object.keys(req.files).length == 0) {
         return res.status(400).send('No files were uploaded.');
       }
