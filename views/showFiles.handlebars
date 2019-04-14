@@ -1,3 +1,14 @@
+<div class="btn-group" role="group" aria-label="Button group with nested dropdown">
+    <form action="/newfolder" method="POST">
+        <input type="text" name='newfolder'>
+        <button type="submit" name="foldername" value="{{@root.id}}" class="btn btn-secondary">NEW FOLDER</button>
+    </form>
+    <form action="/uploadCur" method="POST">
+        <input type="file" name="sampleFile" id='myFile' value="" class="btn btn-secondary btn-block" />
+        <br>
+        <button type='submit' name="foldername" value="{{@root.id}}" class="btn btn-success" />
+    </form>
+</div>
 <div class="row">
     {{#each dirlist}}
     <div class="col-sm-4">
@@ -6,7 +17,7 @@
                 <h5 class="card-title">Special title treatment</h5>
                 <p class="card-text">With supporting text below as a natural lead-in to additional content.</p>
                 <!--a href="/showFiles/:{{this}}" class="btn btn-primary">{{this}}</a-->
-                
+
                 <form action="/showFiles/" method="POST">
                     <input type="submit" name='folder' value='{{@root.id}}{{this}}' class="btn btn-primary btn-block">
                 </form>
@@ -20,22 +31,25 @@
         <tbody>
             {{#each fileToShow}}
             <tr>
-                
-                    <td>{{this}}</td>
-                    <td>
-                        <form action="/downloadFile" method="POST" class="btn btn-primary">
-                            <!--input type="submit" name='file' style="color:transparent;display:hidden;" value="{{@root.id}}{{this}}"   id='download'-->
-                            <button type="submit" name="file" value="{{@root.id}}{{this}}">DOWNLOAD</button>
-                        </form>
-                        <form action="/view" method="POST">
-                            <!--input type="submit" name='fileView'  value="{{@root.id}}{{this}}" class="btn btn-primary" id='view'-->
-                             <button type="submit" name="fileView" value="{{@root.id}}{{this}}">View</button>
-                        </form>
-                        <!--input type="text" name="username" class="form-control"-->
-                        <!--input type="submit" name="file" value="download" class="btn btn-primary">
+
+                <td>{{this}}</td>
+                <td>
+                    <form action="/downloadFile" method="POST" class="btn btn-primary">
+                        <!--input type="submit" name='file' style="color:transparent;display:hidden;" value="{{@root.id}}{{this}}"   id='download'-->
+                        <button type="submit" name="file" value="{{@root.id}}{{this}}">DOWNLOAD</button>
+                    </form>
+                    <form action="/view" method="POST">
+                        <!--input type="submit" name='fileView'  value="{{@root.id}}{{this}}" class="btn btn-primary" id='view'-->
+                        <button type="submit" name="fileView" value="{{@root.id}}{{this}}">View</button>
+                    </form>
+                    <form action="/delete" method="POST" class="btn btn-primary">
+                        <button type="submit" name='filedel' value="{{@root.id}}{{this}}">DELETE</button>
+                    </form>
+                    <!--input type="text" name="username" class="form-control"-->
+                    <!--input type="submit" name="file" value="download" class="btn btn-primary">
                         <input type="submit" value="View" formaction="/view/:{{@root.id}}{{this}}" class="btn btn-primary"-->
-                    </td>
-                
+                </td>
+
             </tr>
             {{/each}}
         </tbody>
