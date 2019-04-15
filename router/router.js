@@ -34,6 +34,7 @@ fs.readdir(testFolder, (err, files) => {
     //filelistExt.push(path.extname(file || '').split('.'))
   });
 });
+
 /*middleware for login Check*/
 var sessionChecker = (req, res, next) => {
   if (req.session.user || req.cookies.user_sid) {
@@ -42,6 +43,7 @@ var sessionChecker = (req, res, next) => {
     res.redirect('/login')
   }
 };
+
 /*testing if user is logged in or not
   //dummy route
   */
@@ -328,4 +330,6 @@ router.post('/uploadFile', (req, res) => {
   });
   res.redirect('/')
 })
+//if you want to make uploads file secure
+//router.use(sessionChecker,express.static('uploads'))
 module.exports = router;
